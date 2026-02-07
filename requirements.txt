@@ -1,0 +1,37 @@
+# ============================================
+# Poly-Muse Analyst: 音乐分析智能体依赖
+# ============================================
+
+# === 核心音频处理 ===
+torch>=2.0.0
+torchaudio>=2.0.0
+numpy>=1.24.0
+scipy>=1.10.0
+librosa>=0.10.0
+
+# === 音源分离 (BS-RoFormer) ===
+BS-RoFormer>=0.8.0
+einops>=0.6.0
+ml_collections>=0.1.1
+rotary-embedding-torch>=0.5.0
+
+# === 符号转录 (Basic Pitch) ===
+basic-pitch>=0.3.0
+
+# === 语义检索层 ===
+transformers>=4.35.0
+sentence-transformers>=2.2.0
+
+# === Agent 编排 (LangGraph) ===
+langchain>=0.1.0
+langgraph>=0.0.20
+langchain-openai>=0.0.5
+
+# === 工具与接口 ===
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+rich>=13.0.0
+typer>=0.9.0
+
+# === 可选：前端界面 ===
+streamlit>=1.30.0

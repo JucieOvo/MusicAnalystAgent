@@ -1,0 +1,35 @@
+# User Specified
+output/
+models/
+lib/clamp3/
+卡农.mp3
+
+# Python General
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env/
+.venv/
+
+# Logs
+debug.log
+debug_output.txt
+*.log
+
+# Audio Files
+*.wav
+*.flac
+*.mp3
+
+# System & IDE
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Sensitive
+.env
