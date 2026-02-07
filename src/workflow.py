@@ -124,7 +124,7 @@ def transcribe_stems(state: AnalysisState) -> AnalysisState:
         midi_results = transcriber.transcribe_all_stems(stems_path_typed, output_dir)
         
         # 分析音乐特征
-        features = transcriber.analyze_features(midi_results)
+        features = transcriber.analyze_features(midi_results, stems_path_typed)
         
         # 转换为可序列化格式
         midi_data = {}

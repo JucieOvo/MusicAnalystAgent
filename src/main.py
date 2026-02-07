@@ -57,13 +57,16 @@ def analyze(
         border_style="cyan"
     ))
     
+    if output is None:
+        output = OUTPUT_DIR / audio_file.stem
+
     try:
         pipeline = MusicAnalysisPipeline()
         state = pipeline.analyze(audio_file, task_type)
         
         if export_json and state and state.get("analysis_report"):
             from src.agents.analyst import export_result
-            output_path = output / "analysis_result.json" if output else None
+            output_path = output / "analysis_result.json"
             export_result(state, output_path)
             
     except KeyboardInterrupt:

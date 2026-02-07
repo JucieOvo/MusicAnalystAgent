@@ -21,6 +21,7 @@
 import shutil
 import time
 import logging
+import hashlib
 from pathlib import Path
 from typing import Dict, Optional, List
 
@@ -34,6 +35,18 @@ from src.config import config, OUTPUT_DIR, MODELS_DIR
 from src.schemas import StemType, AnalysisState
 
 console = Console()
+
+
+def calculate_md5(file_path: Path) -> str:
+    """计算文件 MD5"""
+    try:
+        hash_md5 = hashlib.md5()
+        with open(file_path, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hash_md5.update(chunk)
+        return hash_md5.hexdigest()
+    except Exception as e:
+        return f"Error: {e}"
 
 
 class AudioSeparator:
@@ -109,6 +122,8 @@ class AudioSeparator:
         
         console.print(f"\n[bold cyan][MUSIC] 开始音源分离[/bold cyan]")
         console.print(f"  输入: {audio_path.name}")
+        md5 = calculate_md5(audio_path)
+        console.print(f"  MD5:  [yellow]{md5}[/yellow]")
         console.print(f"  输出: {output_dir}")
         console.print(f"  模型: {self.model_name}")
         

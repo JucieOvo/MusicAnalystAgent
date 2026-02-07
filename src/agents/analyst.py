@@ -19,43 +19,52 @@ console = Console()
 
 
 # === 分析报告 Prompt 模板 ===
-ANALYST_PROMPT_TEMPLATE = """你是一位专业的音乐制作人和乐评人。请根据以下通过 AI 分析提取的客观数据，撰写一份深度的音乐分析报告。
+ANALYST_PROMPT_TEMPLATE = """你是一位资深的音乐制作人和乐评人，拥有敏锐的听觉和深厚的乐理知识。
+请根据以下 AI 提取的详细音乐特征数据，撰写一份专业、深度且充满洞见的音乐分析报告。
 
-## 音频信息
+## 1. 基础信息
 - 文件名: {filename}
 - 时长: {duration}
-
-## 音乐特征 (由符号转录系统提取)
 - BPM: {bpm}
 - 调性: {key}
 - 拍号: {time_signature}
+
+## 2. 和声与旋律分析
 - 和弦进行: {chord_progression}
 
-## 乐器构成 (由音源分离系统识别)
-分离出的独立音轨:
-{stems_info}
+## 3. 编曲与配器细节 (分轨深度分析)
+{stems_detailed_analysis}
 
-## 转录数据
-{transcription_summary}
-
-## 语义标签 (由 CLaMP 3 跨模态检索得出)
-- 情感: {mood}
+## 4. 语义感知 (AI 听感标签)
+- 情感氛围: {mood}
 - 风格流派: {genre}
 - 音色质感: {texture}
 - 识别乐器: {instruments}
 
 ---
 
-请撰写一份专业的音乐分析报告，包含以下部分：
+## 写作要求
+请综合上述数据，撰写一份结构清晰的 Markdown 报告。请避免简单罗列数据，而是将数据转化为**音乐性的描述**。
 
-1. **整体印象** - 对这首曲目的第一印象和整体评价
-2. **编曲分析** - 分析各乐器的编排、层次和相互关系
-3. **制作技巧** - 从制作人角度分析可能使用的技术手法
-4. **情感表达** - 分析音乐如何传递情感
-5. **风格定位** - 将其归类并与相似作品对比
-6. **亮点与建议** - 突出的亮点以及可能的改进空间
+**报告结构：**
 
-请使用 Markdown 格式，语言专业但易于理解。
+1.  **整体听感与风格定位**
+    *   结合 BPM、调性和风格标签，描述曲目的整体氛围。
+    *   (例如：128 BPM 配合 F# Minor 调性，构建了典型的 Deep House 阴郁而律动的基调...)
+
+2.  **编曲与制作分析**
+    *   **核心律动**: 基于 Drums 和 Bass 的密度与活跃度，分析节奏组的表现（如：稀疏的鼓点配合活跃的贝斯线...）。
+    *   **旋律与和声**: 分析 Vocals/Other 的音域和密度，以及和弦进行的走向带来的情感张力。
+    *   **音响设计**: 结合音色质感标签，评价整体的混音风格（如：Lo-fi 颗粒感、空间感等）。
+
+3.  **情感演进与高潮**
+    *   推测音乐的情感发展曲线。
+
+4.  **制作人视角的专业点评**
+    *   指出曲目的亮点（如独特的和弦替代、精彩的贝斯编排）。
+    *   给出制作上的改进建议。
+
+请保持语气专业、客观但富有感染力，像一位真人在评价这首歌。
 """
 
 
@@ -173,30 +182,36 @@ class MusicAnalyst:
             secs = int(musical_features.duration_seconds % 60)
             duration = f"{mins}:{secs:02d}"
             
-        bpm = musical_features.bpm if musical_features else "未检测"
-        key = musical_features.key if musical_features else "未检测"
+        bpm = f"{musical_features.bpm:.1f}" if musical_features and musical_features.bpm else "未检测"
+        key = musical_features.key if musical_features and musical_features.key else "未检测"
         time_sig = musical_features.time_signature if musical_features else "4/4"
         
         # 和弦进行
         chord_prog = "未检测"
         if musical_features and musical_features.chord_progression:
-            chords = [c.chord_name for c in musical_features.chord_progression[:8]]
+            # 仅取前 16 个和弦展示，避免 Prompt 过长
+            chords = [c.chord_name for c in musical_features.chord_progression[:16]]
             chord_prog = " → ".join(chords)
+            if len(musical_features.chord_progression) > 16:
+                chord_prog += " ..."
             
-        # 分轨信息
-        stems_info = "未分离"
-        if stems_paths:
+        # 分轨详细分析
+        stems_detailed_analysis = "暂无详细分轨数据"
+        if musical_features and musical_features.stem_analyses:
+            lines = []
+            for stem_name, analysis in musical_features.stem_analyses.items():
+                line = (
+                    f"- **{stem_name.upper()}**: {analysis.description}\n"
+                    f"  (密度: {analysis.note_density:.1f} notes/s, "
+                    f"活跃度: {analysis.active_ratio:.0%}, "
+                    f"力度: {analysis.average_velocity:.0f})"
+                )
+                lines.append(line)
+            stems_detailed_analysis = "\n".join(lines)
+        elif stems_paths:
+             # 回退到简单列表
             stems_list = [f"- {stem}" for stem in stems_paths.keys()]
-            stems_info = "\n".join(stems_list)
-            
-        # 转录摘要
-        transcription_summary = "无转录数据"
-        if midi_data:
-            summaries = []
-            for stem_type, data in midi_data.items():
-                notes = data.get("notes", [])
-                summaries.append(f"- {stem_type}: {len(notes)} 个音符事件")
-            transcription_summary = "\n".join(summaries)
+            stems_detailed_analysis = "\n".join(stems_list)
             
         # 语义标签
         mood = ", ".join(semantic_tags.mood) if semantic_tags else "未分析"
@@ -211,8 +226,7 @@ class MusicAnalyst:
             key=key,
             time_signature=time_sig,
             chord_progression=chord_prog,
-            stems_info=stems_info,
-            transcription_summary=transcription_summary,
+            stems_detailed_analysis=stems_detailed_analysis,
             mood=mood,
             genre=genre,
             texture=texture,

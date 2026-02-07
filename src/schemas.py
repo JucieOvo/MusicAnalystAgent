@@ -46,6 +46,17 @@ class ChordInfo(BaseModel):
     roman_numeral: Optional[str] = Field(default=None, description="级数表示，如 vi, IV")
 
 
+class StemAnalysis(BaseModel):
+    """分轨详细分析"""
+    stem_type: str = Field(description="分轨类型")
+    note_count: int = Field(description="音符总数")
+    note_density: float = Field(description="音符密度(个/秒)")
+    pitch_range: tuple[int, int] = Field(description="音域范围 (min, max)")
+    average_velocity: float = Field(description="平均力度")
+    active_ratio: float = Field(description="活跃时间比例 (0.0-1.0)")
+    description: str = Field(default="", description="基于统计的简短描述")
+
+
 class MusicalFeatures(BaseModel):
     """音乐特征结构"""
     bpm: Optional[float] = Field(default=None, description="节拍速度")
@@ -56,6 +67,10 @@ class MusicalFeatures(BaseModel):
         description="和弦进行"
     )
     duration_seconds: Optional[float] = Field(default=None, description="时长(秒)")
+    stem_analyses: Dict[str, StemAnalysis] = Field(
+        default_factory=dict,
+        description="各分轨的详细统计分析"
+    )
 
 
 class SemanticTags(BaseModel):
